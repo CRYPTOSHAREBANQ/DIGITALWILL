@@ -1,0 +1,203 @@
+{% load static %}
+{% load tz %}
+{% static "images" as baseUrl %}
+
+<!doctype html>
+<html lang="en">
+{% include 'header.html' %}
+<body>
+    {% include 'atm_sidebar.html' %}
+    <div class="content-container">
+        {% include 'messages.html' %}
+        <h2 class="ml-4 text-primary">My Digital Wills</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th scope="col" style="text-align: center;">ID</th>
+                <th scope="col" style="text-align: center;">Status</th>
+                <th scope="col" style="text-align: center;">Creation Date</th>
+                <th scope="col" style="text-align: center;">Will Details</th>
+                <th scope="col" style="text-align: center;">Certificate</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for will in blockchain_wills %}
+                    <tr>
+                        <th scope="row" style="text-align: center;">{{ will.id_w }} </th>
+                        <td style="text-align: center;">{{ will.status }} </td>
+                        <td style="text-align: center;">{{ will.creation_datetime }} UTC </td>
+                        <td style="text-align: center;">
+                            {% if will.status != "ACTIVE" %}
+                            <a href="{% url 'atm_functions:RegisterBlockchainWill' %}?id={{ will.id_w }}">
+                                <button style=text-align:center class="btn btn-outline-primary bg-primary text-light" type="submit"
+                                id="button-beneficiaries" >Edit Will</button>
+                            </a>
+                            {% else %}
+                            <button style=text-align:center class="btn btn-outline-primary bg-primary text-light" type="submit"
+                                id="button-beneficiaries" disabled>Open Will</button>
+                            {% endif %}
+                                
+                        </td>
+                        <td style="text-align: center;">
+                            <!-- <a href="" target="_blank"> -->
+                            {% if will.status != "ACTIVE" %}
+                                <button style=text-align:center class="btn btn-outline-primary bg-primary text-light" type="submit"
+                                id="button-credential" disabled>Certificate</button>
+                            {% else %}
+                            <a href="{% url 'atm_functions:CertificateBlockchainWill' %}{{ will.id_w }}/">
+                                <button style=text-align:center class="btn btn-outline-primary bg-primary text-light" type="submit"
+                                id="button-credential">Certificate</button>
+                            </a>
+                            {% endif %}
+                            <!-- </a> -->
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not blockchain_wills %}
+                    <tr>
+                        <th scope="row" style="text-align: center;" colspan="3">No Wills</th>
+                        <td style="text-align: center;">
+                                <button style=text-align:center class="btn btn-outline-primary bg-primary text-light" type="submit"
+                                id="button-beneficiaries" disabled>Full Details</button>
+                        </td>
+                        <td style="text-align: center;">
+                            <!-- <a href="" target="_blank"> -->
+                                <button style=text-align:center class="btn btn-outline-primary bg-primary text-light" type="submit"
+                                id="button-credential" disabled>Credential</button>
+                            <!-- </a> -->
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <br>
+        <h2 class="ml-4 text-primary">Create your Digital Will</h2>
+        <br>
+        <form action="/atm/BlockchainWills/" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="currency_amount"><b>Digital Will Price: </b>  <em>In Cryptoshare Credits</em></label>
+                <input type="number" class="form-control" id="will_price" aria-describedby="will_price" name="will_price"
+                    step=".0001" value="100" required readonly>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="country_laws" name="country_laws" required>
+                    <label class="form-check-label" for="country_laws">
+                        I understand that each <b>country</b> has different laws when it comes to Wills.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_estate_company" name="cb_estate_company" required>
+                    <label class="form-check-label" for="cb_estate_company">
+                        I understand Cryptoshare Banq is not a Law Firm, Legal Agency, or Professional Estate Planning Company.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_court_law" name="cb_court_law" required>
+                    <label class="form-check-label" for="cb_court_law">
+                        I understand that a Blockchain Will / Digital Will is experimental and is subject to be voidable in a Court of Law.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_beneficiary" name="cb_beneficiary" required>
+                    <label class="form-check-label" for="cb_beneficiary">
+                        I understand in the case of my death or incapacity, my Crypto$hare Wallet will be given to My Chosen Beneficiary.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_will_validity" name="cb_will_validity" required>
+                    <label class="form-check-label" for="cb_will_validity">
+                        I understand this Blockchain Will / Digital Will is only valid for the Cryptocurrency in my Cryptoshare Wallet.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_suplemental_document" name="cb_suplemental_document" required>
+                    <label class="form-check-label" for="cb_suplemental_document">
+                        I understand this is a Supplemental Document to add to a Will regulated by your Country.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_attorney" name="cb_attorney" required>
+                    <label class="form-check-label" for="cb_attorney">
+                        I understand I should consult with an Attorney before I purchase.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_changes" name="cb_changes" required>
+                    <label class="form-check-label" for="cb_changes">
+                        I understand that I have to Create a New Blockchain Will / Digital Will if I want to make changes.
+                    </label>
+                </div>
+            </div>
+            <div class="container-fluid" style="background-color: #e2ff9f81; padding: 1%;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="cb_lastwill" name="cb_lastwill" required>
+                    <label class="form-check-label" for="cb_lastwill">
+                        I understand the Last Blockchain Will purchased is the one that will be used.
+                    </label>
+                </div>
+            </div>
+            <small id="addressRegisterHelp" class="form-text text-muted">We'll never share information with anyone else</small>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+        
+        <div class="container-fluid" style="background-color: #bebebe81; padding: 1%;">
+            <small id="addressRegisterHelp" class="form-text text-muted" style="color: white; text-align: center; padding: 5px; border-style: dotted none none none; border-width: 1px; ">*Only the last Will will be Used</small>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                autoDisplay: false
+            }, 'google_translate_element'); //remove the layout
+        }
+    </script>
+    <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" type="text/javascript">
+    </script>
+    
+    
+    <script type="text/javascript">
+        function triggerHtmlEvent(element, eventName) {
+            var event;
+            if (document.createEvent) {
+                event = document.createEvent('HTMLEvents');
+                event.initEvent(eventName, true, true);
+                element.dispatchEvent(event);
+            } else {
+                event = document.createEventObject();
+                event.eventType = eventName;
+                element.fireEvent('on' + event.eventType, event);
+            }
+        }
+        
+        $('.translation-links a').click(function (e) {
+            e.preventDefault();
+            var lang = $(this).data('lang');
+            $('#google_translate_element select option').each(function () {
+                if ($(this).text().indexOf(lang) > -1) {
+                    $(this).parent().val($(this).val());
+                    var container = document.getElementById('google_translate_element');
+                    var select = container.getElementsByTagName('select')[0];
+                    triggerHtmlEvent(select, 'change');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
